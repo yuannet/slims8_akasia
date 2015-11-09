@@ -198,22 +198,28 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
   $search_result_info .= '<div class="search-query-time">'.__('Query took').' <b>'.$biblio_list->query_time.'</b> '.__('second(s) to complete').'</div>';
   if ($biblio_list->num_rows < 1 && $keywords != '') {
     // word suggestion with enchant
-    if (function_exists('enchant_broker_init') && $sysconf['spellchecker_enabled']) {
-      $enc = enchant_broker_init();
+       /*
+      if (function_exists('enchant_broker_init') && $sysconf['spellchecker_enabled']) {
+        $enc = enchant_broker_init();
+     
       if (enchant_broker_dict_exists($enc,$sysconf['default_lang'])) {
         $dict = enchant_broker_request_dict($enc,$sysconf['default_lang']);
       } else {
         $dict = enchant_broker_request_dict($enc,'en_US');
       }
+       
       $search_result_info .= '<div class="search-suggestions">'.__('Did you mean:').' ';
       $word = strtok($keywords, " \t\n");
       $keywords_suggest = array();
+       
       while ($word !== false) {
-		// check if we are inside quote
+		//check if we are inside quote
+          
 		if (stripos($word, '"', 0) === true) {
           $search_result_info .= preg_replace('@[a-z]@i', '', $word);
           $word = str_replace('"', '', $word);
 		}
+           
         $wordcorrect = enchant_dict_check($dict, $word);
         if (!$wordcorrect) {
           $closest = null;
@@ -241,14 +247,17 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
 		  $keywords_suggest[] = '<b class="search-word-correct">'.$word.'</b>';
 		  $keywords_suggest_plain[] = $word;
 		}
+           
 		$word = strtok(" \t\n");
 	  }
+          
 	  $keywords_suggest_plain_str = implode(' ', $keywords_suggest_plain);
       $search_result_info .= '<a class="search-suggestion-link" href="./index.php?keywords='.urlencode($keywords_suggest_plain_str).'&search=Search">';
       $search_result_info .= implode(' ', $keywords_suggest);
       $search_result_info .= '</a>?</div>';
       enchant_broker_free_dict($dict);
-    }
+           
+    } */
   }
 
   if (isset($biblio_list) && isset($sysconf['enable_xml_result']) && $sysconf['enable_xml_result']) {
@@ -265,7 +274,7 @@ if (isset($_GET['JSONLD']) && $sysconf['jsonld_result']) {
   if ($biblio_list->num_rows > 0) {
     // send http header
     header('Content-Type: application/ld+json');
-    header('Content-disposition: attachment; filename=biblio-opac.json');
+    //header('Content-disposition: attachment; filename=biblio-opac.json');
     echo $biblio_list->JSONLDresult();
   }
   exit();

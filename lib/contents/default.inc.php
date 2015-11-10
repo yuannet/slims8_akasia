@@ -17,16 +17,13 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 *
 */
-
 // be sure that this file not accessed directly
 if (!defined('INDEX_AUTH')) {
   die("can not access this file directly");
 } elseif (INDEX_AUTH != 1) {
   die("can not access this file directly");
 }
-
 /* Showing list of catalogues and also for searching handling */
-
 // include required class class
 require SIMBIO.'simbio_UTILS/simbio_tokenizecql.inc.php';
 require SIMBIO.'simbio_GUI/paging/simbio_paging.inc.php';
@@ -43,21 +40,17 @@ if ($sysconf['index']['type'] == 'index') {
 } else {
   require LIB.'biblio_list.inc.php';
 }
-
 // create biblio list object
 try {
   $biblio_list = new biblio_list($dbs, $sysconf['opac_result_num']);
 } catch (Exception $err) {
   die($err->getMessage());
 }
-
 if (isset($sysconf['enable_xml_detail']) && !$sysconf['enable_xml_detail']) {
   $biblio_list->xml_detail = false;
 }
-
 // search result info
 $search_result_info = '';
-
 // if we are in searching mode
 if (isset($_GET['search']) && !empty($_GET['search'])) {
   // default vars
@@ -131,7 +124,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
       $biblio_list->setSQLcriteria($criteria);
     }
   }
-
   // searched words
   $searched_words = implode(' ', $biblio_list->words);
   if ($biblio_list->words) {
@@ -142,7 +134,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
     $searched_words_js_array = substr_replace($searched_words_js_array, '', -1);
     $searched_words_js_array .= ']';
   }
-
   // search result info construction
   $keywords_info = '<span class="search-keyword-info" title="'.htmlentities($keywords).'">'.((strlen($keywords)>30)?substr($keywords, 0, 30).'...':$keywords).'</span>';
   $search_result_info .= '<div class="search-found-info">';
@@ -163,24 +154,19 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search_result_info .= __('Found <strong>{biblio_list->num_rows}</strong> from your keywords').': <strong class="search-found-info-keywords">'.$keywords_info.'</strong>';
   }
   $search_result_info .= '</div>';
-
   // show promoted titles
   if (isset($sysconf['enable_promote_titles']) && $sysconf['enable_promote_titles']) {
     $biblio_list->only_promoted = true;
   }
-
   if (!isset($_GET['resultXML']) && !isset($_GET['JSONLD'])) {
     // show the list
     echo $biblio_list->getDocumentList();
     echo '<br />'."\n";
   }
-
   // set result number info
   $search_result_info = str_replace('{biblio_list->num_rows}', $biblio_list->num_rows, $search_result_info);
-
   // count total pages
   $total_pages = ceil($biblio_list->num_rows/$sysconf['opac_result_num']);
-
   // page number info
   if (isset($_GET['page']) AND $_GET['page'] > 1) {
     $page = intval($_GET['page']);
@@ -190,7 +176,6 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
   } else {
     $page = 1;
   }
-
   // query time
   if (!isset($_SERVER['QUERY_STRING'])) {
     $_SERVER['QUERY_STRING'] = '';
@@ -198,68 +183,83 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
   $search_result_info .= '<div class="search-query-time">'.__('Query took').' <b>'.$biblio_list->query_time.'</b> '.__('second(s) to complete').'</div>';
   if ($biblio_list->num_rows < 1 && $keywords != '') {
     // word suggestion with enchant
-       /*
-      if (function_exists('enchant_broker_init') && $sysconf['spellchecker_enabled']) {
+      
+      
+       
+    //if function exist and spellchecker enabled
+    if (function_exists('enchant_broker_init') && $sysconf['spellchecker_enabled']) {
         $enc = enchant_broker_init();
-     
-      if (enchant_broker_dict_exists($enc,$sysconf['default_lang'])) {
-        $dict = enchant_broker_request_dict($enc,$sysconf['default_lang']);
-      } else {
-        $dict = enchant_broker_request_dict($enc,'en_US');
-      }
-       
-      $search_result_info .= '<div class="search-suggestions">'.__('Did you mean:').' ';
-      $word = strtok($keywords, " \t\n");
-      $keywords_suggest = array();
-       
-      while ($word !== false) {
-		//check if we are inside quote
-          
-		if (stripos($word, '"', 0) === true) {
-          $search_result_info .= preg_replace('@[a-z]@i', '', $word);
-          $word = str_replace('"', '', $word);
-		}
-           
-        $wordcorrect = enchant_dict_check($dict, $word);
-        if (!$wordcorrect) {
-          $closest = null;
-          $wordsuggest = enchant_dict_suggest($dict, $word);
-		      $shortest = -1;
-		      // loop through words to find the closest with levenshtein
-		      foreach ($wordsuggest as $wordsg) {
-		      	$lev = levenshtein($word, $wordsg);
-		      	if ($lev == 0) {
-		      	  $closest = $wordsg;
-		      	  $shortest = 0;
-		      	  break;
-		      	}
+        
+        //to make sure enchant_broker_request_dict return true bool
+        if (enchant_broker_request_dict($enc,$sysconf['default_lang'])) { 
+        
+            //if enhance broker dict exist
+            if (enchant_broker_dict_exists($enc,$sysconf['default_lang'])) {
+              $dict = enchant_broker_request_dict($enc,$sysconf['default_lang']);
+            } else {
+              $dict = enchant_broker_request_dict($enc,'en_US');
+            }
+            //end if enhance broker dict exist
 
-		      	if ($lev <= $shortest || $shortest < 0) {
-		      	  // set the closest match, and shortest distance
-		      	  $closest  = $wordsg;
-		      	  $shortest = $lev;
-		      	}
-		      }
+            $search_result_info .= '<div class="search-suggestions">'.__('Did you mean:').' ';
+            $word = strtok($keywords, " \t\n");
+            $keywords_suggest = array();
 
-          $keywords_suggest[] = '<b class="search-word-suggest">'.$closest.'</b>';
-          $keywords_suggest_plain[] = $closest;
-        } else {
-		  $keywords_suggest[] = '<b class="search-word-correct">'.$word.'</b>';
-		  $keywords_suggest_plain[] = $word;
-		}
-           
-		$word = strtok(" \t\n");
-	  }
+            //loop if word not false
+            while ($word !== false) {
+                //check if we are inside quote
+                if (stripos($word, '"', 0) === true) {
+                $search_result_info .= preg_replace('@[a-z]@i', '', $word);
+                $word = str_replace('"', '', $word);
+                }
+                //end if check if we are inside quote
+
+                $wordcorrect = enchant_dict_check($dict, $word);
+
+                //if wordcorrect not true
+                if (!$wordcorrect) {
+                    $closest = null;
+                    $wordsuggest = enchant_dict_suggest($dict, $word);
+                    $shortest = -1;
+
+                    // loop through words to find the closest with levenshtein
+                    foreach ($wordsuggest as $wordsg) {
+                        $lev = levenshtein($word, $wordsg);
+                        //if $lev == 0 
+                        if ($lev == 0) {
+                        $closest = $wordsg;
+                        $shortest = 0;
+                        break;
+                        } //end $lev == 0
+
+                        //if $lev <= $shortest
+                        if ($lev <= $shortest || $shortest < 0) {
+                        // set the closest match, and shortest distance
+                         $closest  = $wordsg;
+                              $shortest = $lev;
+                        } //end if $lev <= $shortest
+                    } //end  loop through words to find the closest with levenshtein
+
+                    $keywords_suggest[] = '<b class="search-word-suggest">'.$closest.'</b>';
+                    $keywords_suggest_plain[] = $closest;
+                    } else {
+                      $keywords_suggest[] = '<b class="search-word-correct">'.$word.'</b>';
+                      $keywords_suggest_plain[] = $word;
+                    } //end if wordcorrect not true
+
+                    $word = strtok(" \t\n");
+            } //end loop if word not false
           
-	  $keywords_suggest_plain_str = implode(' ', $keywords_suggest_plain);
-      $search_result_info .= '<a class="search-suggestion-link" href="./index.php?keywords='.urlencode($keywords_suggest_plain_str).'&search=Search">';
-      $search_result_info .= implode(' ', $keywords_suggest);
-      $search_result_info .= '</a>?</div>';
-      enchant_broker_free_dict($dict);
+	$keywords_suggest_plain_str = implode(' ', $keywords_suggest_plain);
+        $search_result_info .= '<a class="search-suggestion-link" href="./index.php?keywords='.urlencode($keywords_suggest_plain_str).'&search=Search">';
+        $search_result_info .= implode(' ', $keywords_suggest);
+        $search_result_info .= '</a>?</div>';
+        enchant_broker_free_dict($dict);
+        } //to make sure enchant_broker_request_dict return true bool
            
-    } */
+    } //if function exist and spellchecker enabled
+       
   }
-
   if (isset($biblio_list) && isset($sysconf['enable_xml_result']) && $sysconf['enable_xml_result']) {
     $search_result_info .= '<div>';
     $search_result_info .= '<a href="index.php?resultXML=true&'.$_SERVER['QUERY_STRING'].'" class="xmlResultLink" target="_blank" title="View Result in XML Format" style="clear: both;">XML Result</a>';
@@ -267,13 +267,13 @@ if (isset($_GET['search']) && !empty($_GET['search'])) {
     $search_result_info .= '</div>';
   }
 }
-
 if (isset($_GET['JSONLD']) && $sysconf['jsonld_result']) {
   // get document list but don't output the result
   $biblio_list->getDocumentList(false);
   if ($biblio_list->num_rows > 0) {
     // send http header
     header('Content-Type: application/ld+json');
+    //why need to be downloaded?
     //header('Content-disposition: attachment; filename=biblio-opac.json');
     echo $biblio_list->JSONLDresult();
   }

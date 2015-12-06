@@ -68,6 +68,7 @@ class Connection{
         //adding plus befor each word;
         $search = str_replace(",", "", $search);
         $search = str_replace(" ", " +", $search);
+        $search = htmlentities($search);
         //exlude own biblio_id  @getRelate
         if (!is_null($exclude_biblio_id)) {
             $exclude_biblio_id ='AND biblio.biblio_id NOT IN ('. $exclude_biblio_id.')';
@@ -154,9 +155,7 @@ class Connection{
     //to getRelated record, get the details id and query the title
     public function getRelate($biblio_id,$limit) {
        $relate = $this->getDetails($biblio_id);
-       //echo $relate[0]["topic"];
        !empty($relate[0]["topic"])? $search = $relate[0]["topic"]: $search = $relate[0]["title"];
-       //$search = $relate[0]["title"];
        $exclude_biblio_id = $biblio_id;
        $relate = $this->getSearch($search,$exclude_biblio_id,0,$limit);
        return $relate; 
@@ -251,33 +250,6 @@ class Connection{
         return $pagination;
     } 
     
-    
-
-
-    function image($size,$filename) {
-        // Content type
-        header('Content-Type: image/jpeg');
-
-        $path = "../../images/docs/{$filename}";
-        $filename  = $path;
-
-        // Get new dimensions
-        list($width_orig, $height_orig) = getimagesize($filename);
-        // Get requested width size
-        $width = $size;
-        // Resize height base on width ratio
-        $height =$height_orig*($width/$width_orig);
-
-        // Resample
-        $image_p = imagecreatetruecolor($width, $height);
-        $image = imagecreatefromjpeg($filename);
-        imagecopyresampled($image_p, $image, 0, 0, 0, 0, $width, $height, $width_orig, $height_orig);
-
-        // Output
-        return imagejpeg($image_p, null, 100);
-    }
-
-    
     function limitWord($text, $limit) {
           if (str_word_count($text, 0) > $limit) {
               $words = str_word_count($text, 2);
@@ -289,10 +261,3 @@ class Connection{
 
 }
 
-
-
-
-//$myDB->search($string)
-//function to split and use +
-//pakai balikan function ini untuk search($string)
-//baru setelah ini pikirin advanced search

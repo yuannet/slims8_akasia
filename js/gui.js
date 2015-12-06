@@ -55,14 +55,14 @@ jQuery.fn.simbioTable = function(params) {
       currRow.removeClass('highlighted last-highlighted').css({'background-color': this.originColor}).find('td');
       // uncheck the checkbox on row if exists
       if (currRow.find('.noAutoFocus').length < 1) {
-	    currRow.find('input:checkbox:first').removeAttr('checked');
+	    currRow.find('input:checkbox:first').prop('checked', false);
 	  }
     } else {
       // set highlighted flag
       this.highlighted = true;
 	  if (currRow.find('.noAutoFocus').length < 1) {
 		// check the checkbox on row if exists
-		currRow.find('input:checkbox:first').attr('checked', 'checked');
+		currRow.find('input:checkbox:first').prop('checked', true);
 	    currRow.find('input:text,textarea,select').first().focus();
 	  }
       // get parent table of row
@@ -371,7 +371,7 @@ $('document').ready(function() {
     // report filter
     $('#filterForm').children('.divRow:gt(0)').wrapAll('<div class="hiddenFilter"></div>');
     var hiddenFilter = $('.hiddenFilter').hide();
-    $('[name=moreFilter]').toggle(function() { hiddenFilter.fadeIn(); }, function() { hiddenFilter.hide(); });
+    $('[name=moreFilter]').bind('click', function() { hiddenFilter.toggle('fast'); });
     // tooltip
 		if ($.tooltipsy) {
       $('input[title], textarea[title]').tooltipsy({

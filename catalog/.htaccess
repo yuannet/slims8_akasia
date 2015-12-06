@@ -1,0 +1,6 @@
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^image/([^?]*)/([^?]*)$ /catalog/lib/image.php?s=$1&f=$2 [NC,L,QSA]
+RewriteRule ^search/([^?]*)$ /catalog/html/index.php?q=$1  [NC,L,QSA]
+RewriteRule ^details/([^?]*)$ /catalog/html/detail.php?id=$1  [NC,L,QSA]

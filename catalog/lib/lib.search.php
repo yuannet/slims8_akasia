@@ -64,8 +64,82 @@ class Connection{
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
     
+    
+        public function getSearchFlat($search,$exclude_biblio_id='?',$start=0,$limit=10) {
+        //adding plus befor each word;
+        $search = '+'.$search;
+        $search = str_replace(",", "", $search);
+        $search = str_replace(" ", " +", $search);
+        $search = htmlentities($search);
+        //exlude own biblio_id  @getRelate
+        if (!is_null($exclude_biblio_id)) {
+            $exclude_biblio_id ='AND biblio_id NOT IN ('. $exclude_biblio_id.')';
+        }
+       
+        //get PDO Connection
+        $db = $this->getConnection();        
+        
+        $sql = 'SELECT SQL_CALC_FOUND_ROWS biblio_id, title, image, '
+        . 'isbn_issn, publish_year, publisher, '
+        . 'publish_place, labels, input_date, author, topic, '
+        . 'MATCH (title) AGAINST (:search) SCORE1, '
+        . 'MATCH (topic) AGAINST (:search) SCORE2, '
+        . 'MATCH (author) AGAINST (:search) SCORE3, '
+        . 'MATCH (notes) AGAINST (:search) SCORE4 '
+        . 'FROM search_biblio '
+        . 'WHERE (MATCH (title) AGAINST (:search) '
+        . 'OR MATCH (author) AGAINST (:search) '
+        . 'OR MATCH (topic) AGAINST (:search) '
+        . 'OR MATCH (notes) AGAINST (:search)) '
+        . $exclude_biblio_id
+        . ' GROUP BY biblio_id '
+        . 'ORDER BY (SCORE1)+(SCORE2*3)+(SCORE3*2)+(SCORE4*0.5) DESC, biblio_id DESC '
+        . 'LIMIT :start,:limit';
+        
+        $sqlstring = str_replace(":search","'".$search."'",$sql);
+        $sqlstring = str_replace(":start",$start,$sqlstring);
+        $sqlstring = str_replace(":limit",$limit,$sqlstring);
+        echo '<div class="container thumbnail">'.$sqlstring.'</div>';
+        $start = (int)$start;
+        $limit = (int)$limit;
+        $query = $db->prepare($sql);
+            
+        $query->bindParam(':start', $start, PDO::PARAM_INT);
+        $query->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $query->bindParam(':search', $search, PDO::PARAM_STR);
+        $query->execute();        
+        $total = $db->query('SELECT FOUND_ROWS();')->fetch(PDO::FETCH_COLUMN);
+        $total > 1 ? $found = ' Results' : $found = ' Result';
+        $getSearch["Total"] =  $total;
+        $getSearch["TotalString"] =  $total.$found;
+        $getSearch["Records"] = $query->fetchAll(PDO::FETCH_ASSOC);
+        
+        return $getSearch;
+        
+        
+        
+    
+    }
+    
+    //
+    public function getAdsense($search,$limit=100,$total_return=1) {
+        
+        $adsense = $this->getSearchFlat($search,'0',0,$limit);
+        
+        $adsense = $adsense["Records"]; 
+        
+        $name = 'input_date';
+        usort($adsense, function ($a, $b) use(&$name){
+            return strtotime($b[$name]) - strtotime($a[$name]);});
+        $adsense = array_slice($adsense, 0, $total_return);
+        
+        return $adsense;
+    }
+    
+    
     public function getSearch($search,$exclude_biblio_id='?',$start=0,$limit=10) {
         //adding plus befor each word;
+        $search = '+'.$search;
         $search = str_replace(",", "", $search);
         $search = str_replace(" ", " +", $search);
         $search = htmlentities($search);
@@ -157,7 +231,7 @@ class Connection{
        $relate = $this->getDetails($biblio_id);
        !empty($relate[0]["topic"])? $search = $relate[0]["topic"]: $search = $relate[0]["title"];
        $exclude_biblio_id = $biblio_id;
-       $relate = $this->getSearch($search,$exclude_biblio_id,0,$limit);
+       $relate = $this->getSearchFlat($search,$exclude_biblio_id,0,$limit);
        return $relate; 
     }
     

@@ -55,10 +55,22 @@
 
     
     ?>
-   
+    <div class="container">
     <?php if ($search!="") { ?> 
-      <div class="container"><H3>Order By Relevancy Query:</H3>search string: <b><?php echo $search; ?></b></div>';
-        <?php $rs = $myDB->getSearch($search,'0',$cur_page, $per_page); ?>
+      
+    <H3>AdSense For New Collection:</H3>
+        <?php 
+        $rs = $myDB->getAdsense($search,'100'); 
+
+        var_dump($rs);
+
+        ?> 
+    <?php } //end if search result exist ?>
+    </div>
+      
+    <?php if ($search!="") { ?> 
+      <div class="container"><H3>Order By Relevancy Query:</H3>search string: <b><?php echo $search; ?></b></div>
+        <?php $rs = $myDB->getSearchFlat($search,'0',$cur_page, $per_page); ?>
         <section class="gray-bg kode-best-sellter-sec">
         	<div class="container">
             	<!--SECTION CONTENT START-->
@@ -105,7 +117,6 @@
 
       
           <?php } //end if search result exist ?>
-        
 
 
   </body>

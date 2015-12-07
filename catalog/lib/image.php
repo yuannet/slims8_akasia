@@ -11,13 +11,12 @@ $filename  = $path;
 // Get new dimensions
 list($width_orig, $height_orig) = getimagesize($filename);
 $width = $size;
-$height =$height_orig*($width/$width_orig);
 
-if ($width != 300 ) {
+if ($width != '300' ) {
     $height =250;
-    $width = $width_orig*($width/$width_orig); 
+    $width = $width_orig*($size/$width_orig); 
 } else {
-    $width =300;
+    $width =$size;
     $height = $height_orig*($width/$width_orig);
 }
 //echo $height;
